@@ -1,0 +1,61 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+
+```{r}
+
+library(reshape2)
+library(scales)
+library(readr)
+library(ggplot2)
+
+setwd("C:/Users/Marina/Desktop/GGPLOT/Ejercicio4/Ejercicio 4")
+
+outcome <- read.csv("outcome-of-care-measures.csv")
+
+outcomesel <- outcome[,c(11,17,23)]
+
+colnames(outcomesel)[1:3]<-c("Heart Attack", "Heart Failure", "Pneumonia")
+outcomesel$.row <- rownames(outcomesel)
+molten <- melt(outcomesel, id=".row", value=c("Heart Attack", "Heart Failure", "Pneumonia"))
+s<-subset(molten, molten$value != "Not Available")
+
+s[,3]<-as.numeric(s[,3])
+
+class(s$value)
+
+gg1 <- ggplot(data = s, aes((value)))
+
+gg1 + geom_histogram()+ facet_grid(s$variable ~.) +
+  xlab ("Ratio de muertes cada 30 días")
+
+outcome<-read.csv("outcome-of-care-measures.csv", colClasses="character")
+hospital<-read.csv("hospital-data.csv", colClasses="character")
+
+outcome.hospital <- merge(outcome, hospital, by="Provider.Number")
+outcome.hospital[,11] <- as.numeric(outcome.hospital[,11])
+outcome.hospital[,15] <- as.numeric(outcome.hospital[,15])
+outcome.hospital$Hospital.Ownership <- factor(outcome.hospital$Hospital.Ownership)
+
+p <- ggplot( data = outcome.hospital, aes(x = outcome.hospital[,15], y = outcome.hospital[,11]))
+
+p + geom_point() + ggtitle("Ataques al corazón cada 30 días por tipo de hospital") +
+  xlab("Número de pacientes visitados") +
+  ylab("Ratio de muertes cada 30 días") + geom_smooth(method = "lm") +
+  facet_wrap(~ Hospital.Ownership, scales = "free_x")
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
